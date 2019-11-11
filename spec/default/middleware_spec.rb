@@ -33,11 +33,6 @@ describe package('mysql-server') do
   it { should be_installed }
 end
 
-describe service('mysql') do
-  it { should be_enabled }
-  it { should be_running }
-end
-
 describe port(3306) do
   it { should be_listening }
 end
@@ -78,7 +73,7 @@ end
 describe command('ruby -v') do
   let(:disable_sudo) { true }
   its(:exit_status) { should eq 0 }
-  its(:stdout) { should match /ruby 2\.3\./ }
+  its(:stdout) { should match /ruby 2\.4\./ }
 end
 
 commands = %w{
@@ -101,6 +96,20 @@ end
 describe 'PHP config parameters' do
   $conf['php_ini'].each do |ini_key, ini_value|
     context php_config(ini_key, :ini => '/etc/php/7.0/apache2/conf.d/99-vccw.ini') do
+      if true == ini_value
+        its(:value) { should eq 1 }
+      elsif false == ini_value
+        its(:value) { should eq "" }
+      else
+        its(:value) { should eq ini_value }
+      end
+    end
+  end
+end
+
+describe 'PHP config parameters for cli' do
+  $conf['php_ini'].each do |ini_key, ini_value|
+    context php_config(ini_key, :ini => '/etc/php/7.0/cli/conf.d/99-vccw.ini') do
       if true == ini_value
         its(:value) { should eq 1 }
       elsif false == ini_value

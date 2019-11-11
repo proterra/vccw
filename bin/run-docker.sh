@@ -34,7 +34,7 @@ VCCW_HOSTNAME=$(echo $VCCW_CONFIG | jq -r .vccw.hostname)
 
 docker pull vccw/vccw-xenial64
 
-docker run -idt -p 80:80 -p 443:443 \
+docker run -idt -p 80:80 -p 443:443 -p 3306 \
 --name=${VCCW_HOSTNAME} \
 --add-host=${VCCW_HOSTNAME}:127.0.0.1 \
 --privileged \
@@ -42,5 +42,13 @@ docker run -idt -p 80:80 -p 443:443 \
 vccw/vccw-xenial64:latest \
 "/sbin/init"
 
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm chown ubuntu:ubuntu ${VM_DIR}
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm chmod 777 ${VM_DIR}
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm mkdir ${VM_DIR}/wp-cli
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm chmod 777 ${VM_DIR}/wp-cli
+
 docker exec --user ubuntu --tty ${VCCW_HOSTNAME} \
 env TERM=xterm ansible-playbook ${VM_DIR}/provision/playbook.yml -e "$(ruby $RUBY)"
+
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm rm -f ${VM_DIR}/wp-cli.yml
+docker exec --tty ${VCCW_HOSTNAME} env TERM=xterm rm -fr ${VM_DIR}/wp-cli

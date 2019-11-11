@@ -11,9 +11,11 @@ if $conf['wp_i18n_tools'] then
   end
 end
 
-describe file('/vagrant/Movefile') do
-  let(:disable_sudo) { true }
-  it { should be_file }
+if $conf['wp_cli_packages'].include?('vccw/wp-cli-scaffold-movefile:@stable') then
+  describe file('/vagrant/Movefile.yml') do
+    let(:disable_sudo) { true }
+    it { should be_file }
+  end
 end
 
 commands = [
@@ -22,7 +24,7 @@ commands = [
 ]
 
 commands.each do |command|
-  describe command('su -l '+$conf['user']+' bash -lc "' + command + '"') do
+  describe command('bash -lc "' + command + '"') do
     let(:disable_sudo) { true }
     its(:exit_status) { should eq 0 }
   end
@@ -30,22 +32,14 @@ end
 
 $conf['composers'].each do |c|
   composer = c.split( ":" )[0]
-  describe command('su -l '+$conf['user']+' bash -lc "composer global show -i ' + composer + '"') do
+  describe command('bash -lc "composer global show -i ' + composer + '"') do
     let(:disable_sudo) { true }
     its(:exit_status) { should eq 0 }
   end
 end
 
 $conf['ruby_gems'].each do |gem, version|
-  describe command('su -l '+$conf['user']+' bash -lc "' + gem + ' help"') do
-    let(:disable_sudo) { true }
-    its(:exit_status) { should eq 0 }
-  end
-end
-
-$conf['wp_cli_packages'].each do |wp|
-  package = wp.split( ":" )[0]
-  describe command('su -l '+$conf['user']+' bash -lc "wp package path ' + package + '"') do
+  describe command('bash -lc "' + gem + ' help"') do
     let(:disable_sudo) { true }
     its(:exit_status) { should eq 0 }
   end
